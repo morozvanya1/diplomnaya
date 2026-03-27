@@ -2,1717 +2,804 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Бланк Переключений — Подстанция</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Бланк переключений</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600&display=swap');
-
-  :root {
-    --bg:       #0d0f14;
-    --surface:  #151921;
-    --card:     #1c2230;
-    --border:   #2a3548;
-    --amber:    #f0a500;
-    --amber2:   #e07b00;
-    --green:    #29d97a;
-    --red:      #ff4d5e;
-    --blue:     #3d9be9;
-    --text:     #d8e2f0;
-    --muted:    #5a6a80;
-    --mono:     'Share Tech Mono', monospace;
-    --sans:     'Exo 2', sans-serif;
-    --display:  'Rajdhani', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ───── GRID NOISE BACKGROUND ───── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(240,165,0,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(240,165,0,.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ───── HEADER ───── */
-  header {
-    position: relative;
-    z-index: 10;
-    background: var(--surface);
-    border-bottom: 2px solid var(--amber);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    height: 64px;
-    box-shadow: 0 4px 24px rgba(240,165,0,.12);
-  }
-
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: var(--amber);
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 15px;
-    color: #000;
-    flex-shrink: 0;
-  }
-
-  .header-title {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--amber);
-  }
-
-  .header-sub {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .status-badge {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 2px;
-    border: 1px solid;
-  }
-  .status-badge.ok { border-color: var(--green); color: var(--green); }
-  .status-badge.warn { border-color: var(--amber); color: var(--amber); }
-
-  /* ───── LAYOUT ───── */
-  .app-shell {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    height: calc(100vh - 64px);
-  }
-
-  /* ───── SIDEBAR NAV ───── */
-  nav {
-    width: 220px;
-    flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 20px 0;
-    gap: 2px;
-  }
-
-  .nav-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    padding: 8px 20px 4px;
-    text-transform: uppercase;
-  }
-
-  .nav-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 11px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--muted);
-    transition: all .15s;
-    border-left: 3px solid transparent;
-    text-align: left;
-  }
-
-  .nav-btn:hover { color: var(--text); background: rgba(255,255,255,.03); }
-  .nav-btn.active {
-    color: var(--amber);
-    border-left-color: var(--amber);
-    background: rgba(240,165,0,.06);
-  }
-
-  .nav-icon {
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .nav-count {
-    margin-left: auto;
-    font-family: var(--mono);
-    font-size: 11px;
-    background: var(--border);
-    color: var(--muted);
-    padding: 1px 6px;
-    border-radius: 2px;
-  }
-  .nav-count.active-count {
-    background: var(--amber2);
-    color: #000;
-  }
-
-  .nav-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 10px 20px;
-  }
-
-  /* ───── MAIN CONTENT ───── */
-  main {
-    flex: 1;
-    overflow-y: auto;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .page { display: none; flex-direction: column; gap: 20px; }
-  .page.active { display: flex; }
-
-  /* ───── PAGE HEADER ───── */
-  .page-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .page-header h1 {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 26px;
-    letter-spacing: 1px;
-    color: var(--text);
-  }
-
-  .page-header .badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 3px 8px;
-    border: 1px solid var(--amber);
-    color: var(--amber);
-    border-radius: 2px;
-    letter-spacing: 1px;
-  }
-
-  /* ───── CARDS ───── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 20px 24px;
-  }
-
-  .card-title {
-    font-family: var(--display);
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* ───── DASHBOARD ───── */
-  .dash-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-  }
-
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--amber);
-  }
-
-  .stat-value {
-    font-family: var(--mono);
-    font-size: 36px;
-    color: var(--amber);
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .stat-label {
-    font-size: 12px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .action-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-
-  .action-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 28px 20px;
-    cursor: pointer;
-    transition: all .2s;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .action-card:hover {
-    border-color: var(--amber);
-    background: rgba(240,165,0,.05);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(240,165,0,.1);
-  }
-
-  .action-icon {
-    font-size: 32px;
-  }
-
-  .action-title {
-    font-family: var(--display);
-    font-weight: 600;
-    font-size: 16px;
-    letter-spacing: 1px;
-    color: var(--text);
-  }
-
-  .action-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  /* ───── FORMS ───── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-  .form-grid.cols-1 { grid-template-columns: 1fr; }
-  .form-grid.cols-3 { grid-template-columns: 120px 1fr 1fr; }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .form-group.full { grid-column: 1 / -1; }
-
-  label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  input[type="text"], input[type="number"], textarea, input[type="file"] {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    padding: 10px 12px;
-    outline: none;
-    transition: border-color .15s;
-    width: 100%;
-  }
-  input:focus, textarea:focus {
-    border-color: var(--amber);
-    box-shadow: 0 0 0 2px rgba(240,165,0,.1);
-  }
-  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-  input[type="file"] { cursor: pointer; }
-
-  input[type="file"]::file-selector-button {
-    background: var(--border);
-    border: none;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 6px 12px;
-    cursor: pointer;
-    margin-right: 12px;
-    letter-spacing: 1px;
-  }
-
-  /* ───── BUTTONS ───── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: var(--display);
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    transition: all .15s;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    background: var(--amber);
-    color: #000;
-  }
-  .btn-primary:hover { background: var(--amber2); }
-
-  .btn-success {
-    background: rgba(41,217,122,.15);
-    color: var(--green);
-    border: 1px solid var(--green);
-  }
-  .btn-success:hover { background: rgba(41,217,122,.25); }
-
-  .btn-danger {
-    background: rgba(255,77,94,.1);
-    color: var(--red);
-    border: 1px solid var(--red);
-  }
-  .btn-danger:hover { background: rgba(255,77,94,.2); }
-
-  .btn-secondary {
-    background: var(--border);
-    color: var(--text);
-  }
-  .btn-secondary:hover { background: var(--muted); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
-
-  .btn-sm { padding: 6px 12px; font-size: 11px; }
-
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-  }
-
-  /* ───── TABLE ───── */
-  .table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  thead {
-    background: rgba(240,165,0,.08);
-    border-bottom: 1px solid var(--amber);
-  }
-
-  th {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--amber);
-    padding: 12px 14px;
-    text-align: left;
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-    line-height: 1.5;
-  }
-
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,.02); }
-
-  .td-id {
-    font-family: var(--mono);
-    color: var(--amber);
-    font-size: 14px;
-    font-weight: bold;
-    width: 60px;
-  }
-
-  .td-location {
-    color: var(--blue);
-    width: 180px;
-    font-size: 12px;
-  }
-
-  .td-operation { max-width: 300px; }
-
-  .td-note {
-    color: var(--green);
-    font-style: italic;
-    font-size: 12px;
-    max-width: 200px;
-  }
-
-  .td-photo { width: 80px; }
-
-  .photo-thumb {
-    width: 56px;
-    height: 42px;
-    object-fit: cover;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    cursor: pointer;
-    transition: transform .15s;
-  }
-  .photo-thumb:hover { transform: scale(1.1); }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-title { font-family: var(--display); font-size: 18px; margin-bottom: 8px; }
-  .empty-desc { font-size: 13px; line-height: 1.5; }
-
-  /* ───── TOAST MESSAGES ───── */
-  #toast-container {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .toast {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 12px 18px;
-    font-family: var(--mono);
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 280px;
-    animation: slideIn .2s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
-  }
-  .toast.success { border-left: 3px solid var(--green); color: var(--green); }
-  .toast.error   { border-left: 3px solid var(--red);   color: var(--red); }
-  .toast.info    { border-left: 3px solid var(--amber); color: var(--amber); }
-
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to   { transform: translateX(0);   opacity: 1; }
-  }
-
-  /* ───── MODAL ───── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.7);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 28px;
-    width: 90%;
-    max-width: 560px;
-    position: relative;
-  }
-
-  .modal-title {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-    color: var(--amber);
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 16px; right: 16px;
-    background: none; border: none;
-    color: var(--muted); cursor: pointer;
-    font-size: 20px;
-  }
-  .modal-close:hover { color: var(--text); }
-
-  /* ───── CAMERA ───── */
-  #camera-preview {
-    width: 100%;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    background: #000;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-  }
-
-  #photo-canvas { display: none; }
-
-  .photo-preview {
-    width: 100%;
-    border-radius: 4px;
-    border: 2px solid var(--green);
-    margin-top: 10px;
-    display: none;
-  }
-
-  /* ───── ZOOM PHOTO ───── */
-  #zoom-modal img {
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-  }
-
-  /* ───── SCROLLBAR ───── */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-  /* ───── SECTION DIVIDER ───── */
-  .section-divider {
-    height: 1px;
-    background: linear-gradient(to right, var(--amber), transparent);
-    opacity: .3;
-    margin: 4px 0;
-  }
-
-  /* ───── INFO BAR ───── */
-  .info-bar {
-    background: rgba(61,155,233,.08);
-    border: 1px solid rgba(61,155,233,.25);
-    border-radius: 4px;
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--blue);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .warn-bar {
-    background: rgba(240,165,0,.08);
-    border: 1px solid rgba(240,165,0,.25);
-    border-radius: 4px;
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--amber);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* ───── PROGRESS INDICATOR ───── */
-  .progress-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .progress-bar-wrap {
-    flex: 1;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(to right, var(--amber), var(--green));
-    border-radius: 3px;
-    transition: width .5s ease;
-  }
-  .progress-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 900px) {
-    nav { width: 56px; }
-    .nav-btn span:not(.nav-icon) { display: none; }
-    .nav-label { display: none; }
-    .nav-count { display: none; }
-    .dash-grid { grid-template-columns: repeat(2,1fr); }
-    .action-grid { grid-template-columns: 1fr; }
-    .form-grid.cols-3 { grid-template-columns: 1fr 1fr; }
-  }
+:root {
+  --bg:       #F4F2EF;
+  --white:    #FFFFFF;
+  --accent:   #E85D3E;
+  --accent2:  #C94828;
+  --green:    #1DB87A;
+  --blue:     #3B82F6;
+  --yellow:   #F59E0B;
+  --purple:   #8B5CF6;
+  --text:     #1C1C1E;
+  --text2:    #3C3C3E;
+  --muted:    #8E8E93;
+  --border:   #E5E5EA;
+  --pill:     #F2F2F7;
+  --sh-sm: 0 1px 4px rgba(0,0,0,.06), 0 2px 12px rgba(0,0,0,.04);
+  --sh:    0 2px 12px rgba(0,0,0,.08), 0 4px 24px rgba(0,0,0,.05);
+  --sh-lg: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  --r: 18px; --r-sm: 12px;
+  --nav: 74px; --hdr: 60px;
+  --sans: 'Plus Jakarta Sans', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.hdr{position:fixed;top:0;left:0;right:0;height:var(--hdr);background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.logo{width:34px;height:34px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.app-nm{font-family:var(--sans);font-weight:800;font-size:18px;flex:1}
+.app-nm span{color:var(--accent)}
+.hdr-pill{background:var(--pill);border-radius:20px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.hdr-pill.on{color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── SCROLL ── */
+.scr{position:fixed;top:var(--hdr);bottom:var(--nav);left:0;right:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pg{display:none;padding:16px 16px 12px;animation:fu .22s ease}
+.pg.on{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:rgba(255,255,255,.95);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom,0);z-index:100;backdrop-filter:blur(20px)}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;color:var(--muted);transition:color .15s;padding:8px 4px;position:relative}
+.ni.on{color:var(--accent)}
+.ni.on svg{transform:scale(1.08)}
+.ni svg{transition:transform .15s}
+.nl{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:.1px}
+.nbg{position:absolute;top:5px;right:calc(50% - 18px);background:var(--accent);color:#fff;font-size:9px;font-weight:700;font-family:var(--sans);min-width:16px;height:16px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--white)}
+.nbg.sh{display:flex}
+
+/* ── CARDS ── */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh-sm);padding:20px;margin-bottom:12px}
+.card-sm{background:var(--white);border-radius:var(--r-sm);box-shadow:var(--sh-sm);padding:14px;margin-bottom:10px}
+
+/* ── PAGE HEADING ── */
+.ph{margin-bottom:2px;font-family:var(--sans);font-weight:800;font-size:22px}
+.ps{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* ── PROGRESS HERO ── */
+.hero{background:linear-gradient(135deg,#E85D3E 0%,#FF8C6B 100%);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;box-shadow:0 8px 24px rgba(232,93,62,.28)}
+.h-label{font-family:var(--sans);font-weight:700;font-size:14px;opacity:.85;margin-bottom:2px}
+.h-big{font-family:var(--sans);font-weight:800;font-size:36px;line-height:1;margin-bottom:14px}
+.h-track{background:rgba(255,255,255,.3);border-radius:4px;height:6px;overflow:hidden}
+.h-fill{height:100%;background:#fff;border-radius:4px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.h-meta{display:flex;justify-content:space-between;margin-top:7px;font-size:12px;font-weight:600;opacity:.8}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{background:var(--pill);border-radius:20px;padding:7px 13px;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px}
+.chip.r{background:#FEF0ED;color:var(--accent)}
+.chip.g{background:#E8FAF3;color:var(--green)}
+.chip.b{background:#EEF4FF;color:var(--blue)}
+
+/* ── ACTION TILES ── */
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.atile{background:var(--white);border-radius:var(--r);box-shadow:var(--sh-sm);padding:18px 14px;cursor:pointer;border:none;text-align:left;display:flex;flex-direction:column;gap:10px;transition:transform .15s,box-shadow .15s}
+.atile:active{transform:scale(.97);box-shadow:var(--sh-sm)}
+.aico{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alb{font-family:var(--sans);font-weight:700;font-size:14px;color:var(--text);line-height:1.25}
+.adc{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px}
+
+/* ── FORMS ── */
+.fg{margin-bottom:14px}
+.fl{font-family:var(--sans);font-weight:600;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;display:block}
+input[type=text],input[type=number],textarea{width:100%;background:var(--pill);border:1.5px solid transparent;border-radius:var(--r-sm);color:var(--text);font-family:var(--body);font-size:15px;padding:13px 15px;outline:none;transition:all .15s;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--accent);background:var(--white);box-shadow:0 0 0 4px rgba(232,93,62,.08)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+textarea{resize:none;min-height:88px;line-height:1.6}
+input[type=file]{display:none}
+.file-lbl{display:flex;align-items:center;gap:12px;background:var(--pill);border:1.5px dashed var(--border);border-radius:var(--r-sm);padding:15px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:14px;font-weight:500}
+.file-lbl:active,.file-lbl:hover{border-color:var(--accent);background:#FEF0ED}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:14px;border:none;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:15px;transition:all .15s;width:100%;-webkit-appearance:none}
+.btn:active{transform:scale(.97)}
+.bp{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(232,93,62,.32)}
+.bp:active{background:var(--accent2)}
+.bg{background:var(--pill);color:var(--text2)}
+.bs{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(29,184,122,.28)}
+.bd{background:#FEF0ED;color:var(--accent)}
+.bds{background:var(--accent);color:#fff}
+.brw{display:flex;flex-direction:column;gap:10px}
+.brh{display:flex;gap:10px}
+.brh .btn{flex:1;width:auto}
+.bsm{padding:9px 14px;font-size:13px;border-radius:10px;width:auto}
+
+/* ── OP CARDS ── */
+.olist{display:flex;flex-direction:column;gap:8px}
+.oc{background:var(--white);border-radius:var(--r-sm);box-shadow:var(--sh-sm);padding:13px;display:flex;gap:11px;align-items:flex-start;animation:fu .2s ease}
+.onum{background:var(--accent);color:#fff;font-family:var(--sans);font-weight:800;font-size:12px;min-width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.onum.done{background:var(--green)}
+.obody{flex:1;min-width:0}
+.oloc{font-size:11px;font-weight:600;color:var(--blue);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+.otxt{font-size:14px;color:var(--text);line-height:1.45}
+.onote{background:#E8FAF3;color:var(--green);font-size:12px;font-weight:500;border-radius:8px;padding:5px 10px;margin-top:7px;display:inline-block}
+.othumb{width:50px;height:50px;border-radius:10px;object-fit:cover;cursor:pointer;flex-shrink:0;transition:transform .15s}
+.othumb:active{transform:scale(.94)}
+.oact{display:flex;gap:5px;flex-direction:column;flex-shrink:0;align-items:center}
+.ibtn{width:32px;height:32px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--pill);transition:all .15s}
+.ibtn:active{transform:scale(.9)}
+
+/* ── EMPTY ── */
+.empty{display:flex;flex-direction:column;align-items:center;padding:40px 24px;text-align:center}
+.eico{width:76px;height:76px;background:var(--pill);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.etit{font-family:var(--sans);font-weight:700;font-size:17px;margin-bottom:7px}
+.esub{font-size:14px;color:var(--muted);line-height:1.5;max-width:220px;margin-bottom:18px}
+
+/* ── GALLERY ── */
+.ggrid{columns:2;column-gap:10px}
+.gi{break-inside:avoid;margin-bottom:10px;border-radius:var(--r-sm);overflow:hidden;position:relative;cursor:pointer;background:var(--pill)}
+.gi img{width:100%;display:block;border-radius:var(--r-sm)}
+.gbadge{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-family:var(--sans);font-weight:700;font-size:11px;padding:3px 8px;border-radius:20px}
+.gdel{position:absolute;top:8px;right:8px;width:28px;height:28px;background:rgba(0,0,0,.5);border:none;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* ── BANNERS ── */
+.banner{border-radius:var(--r-sm);padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:12px;display:flex;align-items:flex-start;gap:9px}
+.bi{background:#EEF4FF;color:#1D4ED8}
+.bw{background:#FFFBEB;color:#92400E}
+.banner svg{flex-shrink:0;margin-top:1px}
+
+/* ── PREVIEW LIST ── */
+.pscr{max-height:260px;overflow-y:auto;border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:12px}
+.pr{display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid var(--border);font-size:13px;align-items:flex-start}
+.pr:last-child{border-bottom:none}
+.pr.hd{background:var(--pill);font-family:var(--sans);font-weight:700;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0}
+.pid{min-width:26px;color:var(--accent);font-weight:700}
+.ploc{min-width:80px;max-width:80px;color:var(--blue);font-size:12px}
+.pop{flex:1;color:var(--text);line-height:1.4}
+
+/* ── NOTE ITEMS ── */
+.nitem{background:var(--white);border-radius:var(--r-sm);padding:13px;margin-bottom:8px;box-shadow:var(--sh-sm);display:flex;gap:11px;align-items:flex-start}
+.nbadge{background:#E8FAF3;color:var(--green);font-family:var(--sans);font-weight:800;font-size:12px;min-width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ntxt{flex:1;font-size:14px;color:var(--text);line-height:1.5}
+
+/* ── EXPORT HERO ── */
+.exhero{background:linear-gradient(135deg,#1DB87A,#059669);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:12px;box-shadow:0 8px 24px rgba(29,184,122,.25)}
+
+/* ── TOAST ── */
+#ta{position:fixed;bottom:calc(var(--nav) + 12px);left:16px;right:16px;z-index:9999;pointer-events:none}
+.toast{border-radius:14px;padding:13px 16px;font-family:var(--sans);font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:var(--sh-lg);pointer-events:auto;animation:ti .28s cubic-bezier(.34,1.56,.64,1);margin-bottom:8px}
+.ts{background:var(--green);color:#fff}
+.te{background:var(--accent);color:#fff}
+.ti{background:var(--text);color:#fff}
+@keyframes ti{from{transform:translateY(16px) scale(.92);opacity:0}to{transform:none;opacity:1}}
+
+/* ── MODAL / SHEET ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.ov.op{display:flex}
+.sheet{background:var(--white);border-radius:24px 24px 0 0;padding:12px 20px 44px;width:100%;max-width:540px;animation:su .28s cubic-bezier(.34,1.56,.64,1)}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.shand{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.stit{font-family:var(--sans);font-weight:800;font-size:19px;margin-bottom:14px}
+
+#cam-prev{width:100%;border-radius:var(--r-sm);background:#000;aspect-ratio:4/3;object-fit:cover;display:none;margin-bottom:12px}
+#ph-canvas{display:none}
+
+.dvd{height:1px;background:var(--border);margin:16px 0}
+
+@media(min-width:600px){.agrid{grid-template-columns:repeat(3,1fr)}.ggrid{columns:3}}
+@media(min-width:900px){
+  .scr,.bnav,.hdr{max-width:600px;left:50%;transform:translateX(-50%)}
+  .bnav,.hdr{border-left:1px solid var(--border);border-right:1px solid var(--border)}
+  #ta{max-width:560px;left:50%;transform:translateX(-50%)}
+}
 </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ═══ -->
-<header>
-  <div class="logo-mark">БП</div>
-  <div>
-    <div class="header-title">Бланк Переключений</div>
-    <div class="header-sub">СИСТЕМА УПРАВЛЕНИЯ ОПЕРАЦИЯМИ НА ПОДСТАНЦИИ</div>
+<div class="hdr">
+  <div class="logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" fill="white"/></svg>
   </div>
-  <div class="header-right">
-    <span class="status-badge warn" id="status-badge">ЗАГРУЗКА НЕ ВЫПОЛНЕНА</span>
-    <span style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="clock"></span>
-  </div>
-</header>
-
-<!-- ═══ APP SHELL ═══ -->
-<div class="app-shell">
-
-  <!-- ─ SIDEBAR ─ -->
-  <nav>
-    <span class="nav-label">Навигация</span>
-    <button class="nav-btn active" onclick="showPage('dashboard')">
-      <span class="nav-icon">⚡</span><span>Главная</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('import')">
-      <span class="nav-icon">📥</span><span>Загрузка</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('blank')">
-      <span class="nav-icon">📋</span><span>Бланк</span>
-      <span class="nav-count" id="nav-count">0</span>
-    </button>
-    <div class="nav-divider"></div>
-    <span class="nav-label">Операции</span>
-    <button class="nav-btn" onclick="showPage('edit')">
-      <span class="nav-icon">✏️</span><span>Редактирование</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('notes')">
-      <span class="nav-icon">📝</span><span>Примечания</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('photo')">
-      <span class="nav-icon">📷</span><span>Фото</span>
-    </button>
-    <div class="nav-divider"></div>
-    <button class="nav-btn" onclick="showPage('export')">
-      <span class="nav-icon">📤</span><span>Выгрузка</span>
-    </button>
-  </nav>
-
-  <!-- ─ MAIN ─ -->
-  <main>
-
-    <!-- ════ DASHBOARD ════ -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <h1>Панель управления</h1>
-        <span class="badge">ГЛАВНОЕ МЕНЮ</span>
-      </div>
-
-      <div class="dash-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-label">Всего операций</div>
-        </div>
-        <div class="stat-card" style="--amber:#29d97a">
-          <div class="stat-value" style="color:var(--green)" id="stat-notes">0</div>
-          <div class="stat-label">С примечаниями</div>
-        </div>
-        <div class="stat-card" style="">
-          <div class="stat-value" style="color:var(--blue)" id="stat-photos">0</div>
-          <div class="stat-label">Фотографий</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" style="color:var(--muted)" id="stat-empty">0</div>
-          <div class="stat-label">Без отметок</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📊 Прогресс обхода</div>
-        <div class="progress-row">
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
-          </div>
-          <span class="progress-label" id="progress-label">0 / 0</span>
-        </div>
-      </div>
-
-      <div class="action-grid">
-        <div class="action-card" onclick="showPage('import')">
-          <div class="action-icon">📥</div>
-          <div class="action-title">Загрузка Excel</div>
-          <div class="action-desc">Импорт бланка переключений из файла формата .xlsx / .xls</div>
-        </div>
-        <div class="action-card" onclick="showPage('blank')">
-          <div class="action-icon">📋</div>
-          <div class="action-title">Просмотр бланка</div>
-          <div class="action-desc">Отображение всех операций в табличном виде с примечаниями</div>
-        </div>
-        <div class="action-card" onclick="showPage('export')">
-          <div class="action-icon">📤</div>
-          <div class="action-title">Выгрузка Excel</div>
-          <div class="action-desc">Экспорт заполненного бланка в файл для печати и подписи</div>
-        </div>
-        <div class="action-card" onclick="showPage('edit')">
-          <div class="action-icon">✏️</div>
-          <div class="action-title">Редактирование</div>
-          <div class="action-desc">Добавление, изменение и удаление записей бланка</div>
-        </div>
-        <div class="action-card" onclick="showPage('notes')">
-          <div class="action-icon">📝</div>
-          <div class="action-title">Примечания</div>
-          <div class="action-desc">Добавление примечаний к проверочным операциям при обходе</div>
-        </div>
-        <div class="action-card" onclick="showPage('photo')">
-          <div class="action-icon">📷</div>
-          <div class="action-title">Фотографирование</div>
-          <div class="action-desc">Съёмка объектов и привязка фото к номеру операции</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ IMPORT ════ -->
-    <div class="page" id="page-import">
-      <div class="page-header">
-        <h1>Загрузка Excel-файла</h1>
-        <span class="badge">ИМПОРТ</span>
-      </div>
-
-      <div class="info-bar">
-        ℹ️ Выберите файл бланка переключений в формате <strong>.xlsx</strong> или <strong>.xls</strong>. Файл должен содержать столбцы: номер, место, операция, примечание.
-      </div>
-
-      <div class="card">
-        <div class="card-title">📁 Выбор файла</div>
-        <div class="form-grid cols-1">
-          <div class="form-group">
-            <label>Файл бланка переключений (Excel)</label>
-            <input type="file" id="excel-file" accept=".xlsx,.xls,.csv">
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="importExcel()">📥 Импортировать</button>
-          <button class="btn btn-ghost" onclick="loadDemo()">⚡ Загрузить демо-данные</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📌 Формат файла</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Столбец A</th>
-                <th>Столбец B</th>
-                <th>Столбец C</th>
-                <th>Столбец D</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="td-id">№ операции</td>
-                <td class="td-location">Место нахождения</td>
-                <td>Содержание основных и промежуточных операций</td>
-                <td class="td-note">Примечание</td>
-              </tr>
-              <tr>
-                <td class="td-id">1</td>
-                <td class="td-location">ОРУ-110 кВ, яч. №5</td>
-                <td>Отключить разъединитель Р-511 на шине 110 кВ...</td>
-                <td class="td-note">—</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card" id="import-preview-card" style="display:none">
-        <div class="card-title">✅ Предпросмотр данных</div>
-        <div class="table-wrap">
-          <table id="import-preview-table">
-            <thead><tr></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-success" onclick="confirmImport()">✅ Подтвердить и загрузить</button>
-          <button class="btn btn-ghost" onclick="cancelImport()">✖ Отмена</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ BLANK (VIEW) ════ -->
-    <div class="page" id="page-blank">
-      <div class="page-header">
-        <h1>Бланк переключений</h1>
-        <span class="badge">ПРОСМОТР</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="renderBlank()">🔄 Обновить</button>
-      </div>
-
-      <div id="blank-empty" class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">Бланк не загружен</div>
-        <div class="empty-desc">Импортируйте Excel-файл с данными переключений<br>или добавьте записи вручную в разделе «Редактирование»</div>
-        <div class="btn-row" style="justify-content:center;margin-top:16px">
-          <button class="btn btn-primary" onclick="showPage('import')">📥 Загрузить файл</button>
-        </div>
-      </div>
-
-      <div id="blank-table-wrap" style="display:none">
-        <div class="table-wrap">
-          <table id="blank-table">
-            <thead>
-              <tr>
-                <th>№ оп.</th>
-                <th>Место нахождения</th>
-                <th>Содержание операций</th>
-                <th>Примечание</th>
-                <th>Фото</th>
-                <th>Действия</th>
-              </tr>
-            </thead>
-            <tbody id="blank-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════ EDIT ════ -->
-    <div class="page" id="page-edit">
-      <div class="page-header">
-        <h1>Редактирование бланка</h1>
-        <span class="badge">CRUD</span>
-      </div>
-
-      <!-- ADD RECORD -->
-      <div class="card">
-        <div class="card-title">➕ Добавить запись</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Место нахождения</label>
-            <input type="text" id="add-location" placeholder="ОРУ-110 кВ, яч. №5">
-          </div>
-          <div class="form-group">
-            <label>Содержание операции</label>
-            <textarea id="add-operation" placeholder="Отключить разъединитель Р-511..."></textarea>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="addRecord()">➕ Добавить запись</button>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <!-- UPDATE RECORD -->
-      <div class="card">
-        <div class="card-title">🔄 Изменить запись</div>
-        <div class="form-grid cols-3">
-          <div class="form-group">
-            <label>№ операции</label>
-            <input type="number" id="upd-id" placeholder="1" min="1">
-          </div>
-          <div class="form-group">
-            <label>Новое место нахождения</label>
-            <input type="text" id="upd-location" placeholder="ОРУ-110 кВ, яч. №5">
-          </div>
-          <div class="form-group">
-            <label>Новое содержание операции</label>
-            <input type="text" id="upd-operation" placeholder="Проверить положение...">
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-success" onclick="updateRecord()">🔄 Обновить запись</button>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <!-- DELETE RECORD -->
-      <div class="card">
-        <div class="card-title">🗑 Удаление записей</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>№ операции для удаления</label>
-            <input type="number" id="del-id" placeholder="Введите номер операции" min="1">
-          </div>
-          <div class="form-group" style="justify-content:flex-end">
-            <div class="btn-row">
-              <button class="btn btn-danger" onclick="deleteRecord()">🗑 Удалить запись</button>
-              <button class="btn btn-danger" onclick="deleteAll()" style="background:rgba(255,77,94,.2)">⚠️ Удалить всё</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📋 Показать бланк</div>
-        <button class="btn btn-secondary" onclick="showPage('blank')">📋 Открыть бланк с записями</button>
-      </div>
-    </div>
-
-    <!-- ════ NOTES ════ -->
-    <div class="page" id="page-notes">
-      <div class="page-header">
-        <h1>Добавление примечаний</h1>
-        <span class="badge">ОБХОД</span>
-      </div>
-
-      <div class="warn-bar">
-        ⚡ Вводите примечания по мере выполнения операций при обходе подстанции
-      </div>
-
-      <div class="card">
-        <div class="card-title">📝 Добавить примечание</div>
-        <div class="form-grid cols-3">
-          <div class="form-group">
-            <label>№ проверочной операции</label>
-            <input type="number" id="note-id" placeholder="4" min="1">
-          </div>
-          <div class="form-group full" style="grid-column: 2 / -1">
-            <label>Текст примечания</label>
-            <textarea id="note-text" placeholder="Введите примечание об операции..."></textarea>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="addNote()">📝 Добавить примечание</button>
-          <button class="btn btn-ghost" onclick="showPage('blank')">📋 Показать бланк</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📋 Все примечания</div>
-        <div id="notes-list"></div>
-      </div>
-    </div>
-
-    <!-- ════ PHOTO ════ -->
-    <div class="page" id="page-photo">
-      <div class="page-header">
-        <h1>Фотографирование объектов</h1>
-        <span class="badge">КАМЕРА</span>
-      </div>
-
-      <div class="info-bar">
-        ℹ️ Фотография автоматически привязывается к номеру проверочной операции и сохраняется в бланке
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <div class="card">
-          <div class="card-title">📷 Камера устройства</div>
-          <div class="form-group" style="margin-bottom:14px">
-            <label>№ проверочной операции</label>
-            <input type="number" id="photo-op-id" placeholder="1" min="1">
-          </div>
-          <video id="camera-preview" autoplay playsinline muted></video>
-          <canvas id="photo-canvas"></canvas>
-          <div class="btn-row">
-            <button class="btn btn-primary" onclick="startCamera()" id="btn-start-cam">📷 Включить камеру</button>
-            <button class="btn btn-success" onclick="capturePhoto()" id="btn-capture" style="display:none">📸 Сделать фото</button>
-            <button class="btn btn-ghost" onclick="stopCamera()" id="btn-stop-cam" style="display:none">✖ Стоп</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">🖼 Загрузить из файла</div>
-          <div class="form-group" style="margin-bottom:14px">
-            <label>№ проверочной операции</label>
-            <input type="number" id="photo-file-op-id" placeholder="1" min="1">
-          </div>
-          <div class="form-group">
-            <label>Выберите фото</label>
-            <input type="file" id="photo-file-input" accept="image/*" onchange="loadPhotoFromFile()">
-          </div>
-          <img id="photo-file-preview" class="photo-preview" alt="Предпросмотр">
-          <div class="btn-row">
-            <button class="btn btn-success" onclick="savePhotoFromFile()" id="btn-save-file-photo" style="display:none">💾 Сохранить фото</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">🖼 Все фотографии</div>
-        <div id="photo-gallery" style="display:flex;flex-wrap:wrap;gap:12px;padding:4px"></div>
-        <div id="no-photos" style="color:var(--muted);font-size:13px;padding:12px">Фотографии не добавлены</div>
-      </div>
-    </div>
-
-    <!-- ════ EXPORT ════ -->
-    <div class="page" id="page-export">
-      <div class="page-header">
-        <h1>Выгрузка в Excel-файл</h1>
-        <span class="badge">ЭКСПОРТ</span>
-      </div>
-
-      <div class="card">
-        <div class="card-title">📊 Сводка перед выгрузкой</div>
-        <div class="dash-grid" style="grid-template-columns:repeat(3,1fr)">
-          <div class="stat-card">
-            <div class="stat-value" id="exp-stat-total">0</div>
-            <div class="stat-label">Операций</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" style="color:var(--green)" id="exp-stat-notes">0</div>
-            <div class="stat-label">С примечаниями</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" style="color:var(--blue)" id="exp-stat-photos">0</div>
-            <div class="stat-label">Фотографий</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">💾 Параметры выгрузки</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Имя файла</label>
-            <input type="text" id="export-filename" value="blank_pereklyucheniy">
-          </div>
-          <div class="form-group">
-            <label>Формат</label>
-            <input type="text" value=".xlsx (Microsoft Excel)" disabled style="opacity:.5">
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-primary" onclick="exportExcel()">📤 Выгрузить Excel-файл</button>
-          <button class="btn btn-ghost" onclick="showPage('blank')">📋 Просмотр бланка</button>
-        </div>
-      </div>
-
-      <div class="warn-bar">
-        ⚠️ После выгрузки распечатайте бланк и предоставьте на проверку и утверждение
-      </div>
-    </div>
-
-  </main>
+  <div class="app-nm">Бланк<span>.</span></div>
+  <div class="hdr-pill" id="spill"><span class="dot"></span><span id="stxt">Не загружен</span></div>
 </div>
 
-<!-- ════ MODALS ════ -->
+<div class="scr">
 
-<!-- Zoom Photo -->
-<div class="modal-overlay" id="zoom-modal">
-  <div class="modal" style="max-width:700px;text-align:center">
-    <button class="modal-close" onclick="closeModal('zoom-modal')">✕</button>
-    <div class="modal-title">📷 Фото операции</div>
-    <img id="zoom-img" src="" alt="">
-    <div style="margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)" id="zoom-caption"></div>
+  <!-- HOME -->
+  <div class="pg on" id="pg-home">
+    <div class="hero">
+      <div class="h-label">Прогресс обхода</div>
+      <div class="h-big" id="p-pct">0%</div>
+      <div class="h-track"><div class="h-fill" id="p-fill" style="width:0%"></div></div>
+      <div class="h-meta"><span id="p-done">0 выполнено</span><span id="p-tot">0 всего</span></div>
+    </div>
+
+    <div class="chips">
+      <div class="chip r">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="c-tot">0</span> операций
+      </div>
+      <div class="chip g">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="c-nt">0</span> заметок
+      </div>
+      <div class="chip b">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>
+        <span id="c-ph">0</span> фото
+      </div>
+    </div>
+
+    <div class="agrid">
+      <button class="atile" onclick="go('import')">
+        <div class="aico" style="background:#FEF0ED">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 12V4m0 8l-3-3m3 3l3-3" stroke="#E85D3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div><div class="alb">Загрузить</div><div class="adc">Импорт Excel</div></div>
+      </button>
+      <button class="atile" onclick="go('blank')">
+        <div class="aico" style="background:#EEF4FF">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="alb">Просмотр</div><div class="adc">Все операции</div></div>
+      </button>
+      <button class="atile" onclick="go('edit')">
+        <div class="aico" style="background:#FFFBEB">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div><div class="alb">Редактор</div><div class="adc">Добавить / изменить</div></div>
+      </button>
+      <button class="atile" onclick="go('notes')">
+        <div class="aico" style="background:#E8FAF3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" stroke="#1DB87A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div><div class="alb">Примечания</div><div class="adc">Записи при обходе</div></div>
+      </button>
+      <button class="atile" onclick="go('photo')">
+        <div class="aico" style="background:#F5F3FF">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="#8B5CF6" stroke-width="2"/><circle cx="12" cy="13" r="3" stroke="#8B5CF6" stroke-width="2"/></svg>
+        </div>
+        <div><div class="alb">Фото</div><div class="adc">Съёмка объектов</div></div>
+      </button>
+      <button class="atile" onclick="go('export')">
+        <div class="aico" style="background:#E8FAF3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4m0 0l4-4m-4 4V4" stroke="#1DB87A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div><div class="alb">Выгрузить</div><div class="adc">Сохранить Excel</div></div>
+      </button>
+    </div>
   </div>
-</div>
 
-<!-- Confirm Delete All -->
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal" style="max-width:400px">
-    <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
-    <div class="modal-title">⚠️ Подтверждение удаления</div>
-    <p style="color:var(--muted);margin-bottom:20px;line-height:1.6">Вы уверены, что хотите удалить ВСЕ записи бланка? Это действие необратимо.</p>
-    <div class="btn-row">
-      <button class="btn btn-danger" onclick="confirmDeleteAll()">⚠️ Удалить всё</button>
-      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Отмена</button>
+  <!-- IMPORT -->
+  <div class="pg" id="pg-import">
+    <div class="ph">Загрузка</div>
+    <div class="ps">Импорт бланка из Excel-файла</div>
+    <div class="banner bi">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>Столбцы файла: <b>№ оп., Место, Операция, Примечание</b></span>
+    </div>
+    <div class="card">
+      <div class="fg">
+        <label class="fl">Excel-файл (.xlsx, .xls)</label>
+        <label class="file-lbl" for="xl-file">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke="#3B82F6" stroke-width="2"/><path d="M13 3v5a1 1 0 001 1h5M10 13l2 2 4-4" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="fn-lbl">Нажмите, чтобы выбрать файл</span>
+        </label>
+        <input type="file" id="xl-file" accept=".xlsx,.xls,.csv" onchange="previewImport()">
+      </div>
+      <button class="btn bg" onclick="loadDemo()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Загрузить демо-данные
+      </button>
+    </div>
+    <div id="imp-prev" style="display:none">
+      <div class="ph" style="font-size:17px;margin-bottom:8px">Предпросмотр</div>
+      <div class="pscr" id="prev-rows"></div>
+      <div class="brw">
+        <button class="btn bp" onclick="confirmImport()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Подтвердить загрузку
+        </button>
+        <button class="btn bg" onclick="cancelImport()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLANK -->
+  <div class="pg" id="pg-blank">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+      <div class="ph" style="margin-bottom:0">Бланк</div>
+      <div class="chip r" style="margin-left:auto" id="occ">0 оп.</div>
+    </div>
+    <div class="ps">Список операций переключения</div>
+    <div class="empty" id="bl-empty">
+      <div class="eico"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <div class="etit">Бланк не загружен</div>
+      <div class="esub">Загрузите Excel-файл или добавьте операции вручную</div>
+      <button class="btn bp" style="width:auto;padding:12px 24px" onclick="go('import')">Загрузить файл</button>
+    </div>
+    <div class="olist" id="bl-list"></div>
+  </div>
+
+  <!-- EDIT -->
+  <div class="pg" id="pg-edit">
+    <div class="ph">Редактирование</div>
+    <div class="ps">Управление записями бланка</div>
+
+    <div class="card">
+      <div style="font-family:var(--sans);font-weight:700;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;background:#FEF0ED;border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#E85D3E" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>Добавить запись
+      </div>
+      <div class="fg"><label class="fl">Место нахождения</label><input type="text" id="a-loc" placeholder="ОРУ-110 кВ, яч. №5"></div>
+      <div class="fg"><label class="fl">Содержание операции</label><textarea id="a-op" placeholder="Отключить разъединитель..."></textarea></div>
+      <button class="btn bp" onclick="addRec()">Добавить запись</button>
+    </div>
+
+    <div class="card">
+      <div style="font-family:var(--sans);font-weight:700;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;background:#FFFBEB;border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>Изменить запись
+      </div>
+      <div class="fg"><label class="fl">№ операции</label><input type="number" id="u-id" placeholder="1" min="1"></div>
+      <div class="fg"><label class="fl">Новое место</label><input type="text" id="u-loc" placeholder="Оставьте пустым чтобы не менять"></div>
+      <div class="fg"><label class="fl">Новое содержание</label><input type="text" id="u-op" placeholder="Оставьте пустым чтобы не менять"></div>
+      <button class="btn bg" style="background:#FFFBEB;color:#92400E" onclick="updRec()">Обновить запись</button>
+    </div>
+
+    <div class="card">
+      <div style="font-family:var(--sans);font-weight:700;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;background:#FEF0ED;border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="#E85D3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>Удалить запись
+      </div>
+      <div class="fg"><label class="fl">№ операции для удаления</label><input type="number" id="d-id" placeholder="Введите номер" min="1"></div>
+      <div class="brh">
+        <button class="btn bd" onclick="delRec()">Удалить</button>
+        <button class="btn bds" onclick="delAll()">Удалить всё</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="pg" id="pg-notes">
+    <div class="ph">Примечания</div>
+    <div class="ps">Записи при обходе подстанции</div>
+    <div class="card">
+      <div class="fg"><label class="fl">№ проверочной операции</label><input type="number" id="n-id" placeholder="4" min="1"></div>
+      <div class="fg"><label class="fl">Текст примечания</label><textarea id="n-txt" placeholder="Введите примечание..."></textarea></div>
+      <button class="btn bs" onclick="addNote()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Добавить примечание
+      </button>
+    </div>
+    <div class="empty" id="n-empty" style="padding:24px">
+      <div class="esub">Примечания ещё не добавлены</div>
+    </div>
+    <div id="n-list"></div>
+  </div>
+
+  <!-- PHOTO -->
+  <div class="pg" id="pg-photo">
+    <div class="ph">Фотографии</div>
+    <div class="ps">Съёмка и привязка к операциям</div>
+    <div class="card">
+      <div class="fg"><label class="fl">№ операции</label><input type="number" id="ph-id" placeholder="1" min="1"></div>
+      <video id="cam-prev" autoplay playsinline muted></video>
+      <canvas id="ph-canvas"></canvas>
+      <div class="brw">
+        <button class="btn bp" id="btn-cam" onclick="toggleCam()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>
+          <span id="cam-lbl">Включить камеру</span>
+        </button>
+        <button class="btn bs" id="btn-snap" style="display:none" onclick="snap()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+          Сделать фото
+        </button>
+      </div>
+      <div class="dvd"></div>
+      <div class="fg">
+        <label class="fl">Или загрузить из галереи</label>
+        <label class="file-lbl" for="ph-file">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="ph-file-lbl">Выбрать фото</span>
+        </label>
+        <input type="file" id="ph-file" accept="image/*" onchange="loadPhFile()">
+      </div>
+      <button class="btn bg" id="btn-save-ph" style="display:none;background:#F5F3FF;color:#6D28D9" onclick="savePhFile()">Сохранить фото</button>
+    </div>
+    <div class="empty" id="g-empty" style="padding:24px"><div class="esub">Фотографии не добавлены</div></div>
+    <div class="ggrid" id="gallery"></div>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="pg" id="pg-export">
+    <div class="ph">Выгрузка</div>
+    <div class="ps">Экспорт заполненного бланка</div>
+    <div class="exhero">
+      <div class="h-label">Готово к выгрузке</div>
+      <div class="h-big" id="ex-tot" style="font-size:28px">0 операций</div>
+      <div class="chips" style="margin:0">
+        <div class="chip" style="background:rgba(255,255,255,.22);color:#fff"><span id="ex-nt">0</span> примечаний</div>
+        <div class="chip" style="background:rgba(255,255,255,.22);color:#fff"><span id="ex-ph">0</span> фото</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="fg"><label class="fl">Имя файла</label><input type="text" id="ex-fn" value="blank_pereklyucheniy"></div>
+      <button class="btn bs" onclick="exportXl()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4m0 0l4-4m-4 4V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Скачать Excel-файл
+      </button>
+    </div>
+    <div class="banner bw">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>После выгрузки распечатайте бланк и передайте на утверждение</span>
+    </div>
+  </div>
+
+</div><!-- /scr -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="ni on" id="ni-home" onclick="go('home')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="nl">Главная</span>
+  </button>
+  <button class="ni" id="ni-import" onclick="go('import')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 12V4m0 8l-3-3m3 3l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="nl">Загрузка</span>
+  </button>
+  <button class="ni" id="ni-blank" onclick="go('blank')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="nbg" id="nbg">0</span>
+    <span class="nl">Бланк</span>
+  </button>
+  <button class="ni" id="ni-notes" onclick="go('notes')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="nl">Заметки</span>
+  </button>
+  <button class="ni" id="ni-export" onclick="go('export')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4m0 0l4-4m-4 4V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="nl">Выгрузка</span>
+  </button>
+</nav>
+
+<!-- MODALS -->
+<div class="ov" id="ov-confirm">
+  <div class="sheet">
+    <div class="shand"></div>
+    <div class="stit">Удалить все записи?</div>
+    <p style="font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:18px">Это действие необратимо. Все операции бланка будут удалены.</p>
+    <div class="brw">
+      <button class="btn bds" onclick="confirmDel()">Да, удалить всё</button>
+      <button class="btn bg" onclick="cls('ov-confirm')">Отмена</button>
     </div>
   </div>
 </div>
 
-<!-- Toast container -->
-<div id="toast-container"></div>
+<div class="ov" id="ov-zoom">
+  <div class="sheet">
+    <div class="shand"></div>
+    <div class="stit" id="z-tit">Фото операции</div>
+    <img id="z-img" src="" alt="" style="width:100%;border-radius:14px;max-height:62vh;object-fit:contain;background:var(--pill)">
+    <button class="btn bg" style="margin-top:14px" onclick="cls('ov-zoom')">Закрыть</button>
+  </div>
+</div>
+
+<div id="ta"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-//  DATA STORE
-// ═══════════════════════════════════════════════════════
-let db = JSON.parse(localStorage.getItem('bp_db') || '[]');
-let pendingImport = [];
-let cameraStream = null;
-let filePhotoData = null;
+let db = JSON.parse(localStorage.getItem('bp3') || '[]');
+let pending = [];
+let camStream = null, camOn = false, filePh = null;
 
-function saveDB() {
-  localStorage.setItem('bp_db', JSON.stringify(db));
-  updateStats();
-  updateNavCount();
-}
+const save = () => { localStorage.setItem('bp3', JSON.stringify(db)); refresh(); };
+const $  = id => document.getElementById(id);
+const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-// ═══════════════════════════════════════════════════════
-//  NAVIGATION
-// ═══════════════════════════════════════════════════════
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-
-  const navMap = { dashboard: 0, import: 1, blank: 2, edit: 3, notes: 4, photo: 5, export: 6 };
-  const btns = document.querySelectorAll('.nav-btn');
-  if (navMap[id] !== undefined) btns[navMap[id]].classList.add('active');
-
-  if (id === 'blank') renderBlank();
-  if (id === 'notes') renderNotesList();
-  if (id === 'photo') renderGallery();
-  if (id === 'export') updateExportStats();
-}
-
-// ═══════════════════════════════════════════════════════
-//  STATS
-// ═══════════════════════════════════════════════════════
-function updateStats() {
-  const total = db.length;
-  const withNotes = db.filter(r => r.note && r.note.trim()).length;
-  const withPhotos = db.filter(r => r.photo).length;
-  const empty = db.filter(r => (!r.note || !r.note.trim()) && !r.photo).length;
-
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-notes').textContent = withNotes;
-  document.getElementById('stat-photos').textContent = withPhotos;
-  document.getElementById('stat-empty').textContent = empty;
-
-  const pct = total ? Math.round((withNotes + withPhotos) / (total * 2) * 100) : 0;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = `${withNotes + withPhotos} / ${total * 2}`;
-
-  document.getElementById('status-badge').textContent = total ? 'БЛАНК ЗАГРУЖЕН' : 'ЗАГРУЗКА НЕ ВЫПОЛНЕНА';
-  document.getElementById('status-badge').className = 'status-badge ' + (total ? 'ok' : 'warn');
-}
-
-function updateNavCount() {
-  const el = document.getElementById('nav-count');
-  el.textContent = db.length;
-  el.className = 'nav-count ' + (db.length ? 'active-count' : '');
-}
-
-function updateExportStats() {
-  document.getElementById('exp-stat-total').textContent = db.length;
-  document.getElementById('exp-stat-notes').textContent = db.filter(r => r.note && r.note.trim()).length;
-  document.getElementById('exp-stat-photos').textContent = db.filter(r => r.photo).length;
-}
-
-// ═══════════════════════════════════════════════════════
-//  CLOCK
-// ═══════════════════════════════════════════════════════
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleString('ru-RU', {
-    day:'2-digit', month:'2-digit', year:'numeric',
-    hour:'2-digit', minute:'2-digit', second:'2-digit'
+// NAVIGATION
+const pgs = ['home','import','blank','edit','notes','photo','export'];
+function go(id) {
+  pgs.forEach(p => {
+    $('pg-'+p).classList.toggle('on', p===id);
+    const n = $('ni-'+p); if(n) n.classList.toggle('on', p===id);
   });
+  if(id==='blank')  renderBlank();
+  if(id==='notes')  renderNotes();
+  if(id==='photo')  renderGallery();
+  if(id==='export') renderExport();
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-// ═══════════════════════════════════════════════════════
-//  IMPORT EXCEL
-// ═══════════════════════════════════════════════════════
-function importExcel() {
-  const file = document.getElementById('excel-file').files[0];
-  if (!file) { toast('Выберите Excel-файл', 'error'); return; }
+// STATS
+function refresh() {
+  const tot = db.length;
+  const wn  = db.filter(r=>r.note&&r.note.trim()).length;
+  const wp  = db.filter(r=>r.photo).length;
+  const pct = tot ? Math.round((wn+wp)/(tot*2)*100) : 0;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
+  set('c-tot',tot); set('c-nt',wn); set('c-ph',wp);
+  set('p-pct',pct+'%');
+  set('p-tot',tot+' всего');
+  set('p-done',(wn+wp)+' выполнено');
+  $('p-fill').style.width = pct+'%';
+
+  const b = $('nbg'); b.textContent = tot; b.classList.toggle('sh', tot>0);
+  set('occ', tot+' оп.');
+  $('spill').classList.toggle('on', tot>0);
+  set('stxt', tot ? 'Загружен' : 'Не загружен');
+}
+
+// IMPORT
+function previewImport() {
+  const file = $('xl-file').files[0]; if(!file) return;
+  $('fn-lbl').textContent = file.name;
+  const r = new FileReader();
+  r.onload = e => {
     try {
-      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const wb = XLSX.read(e.target.result, {type:'binary'});
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      if(rows.length < 2) { toast('Файл пустой','e'); return; }
+      const first = rows[0].map(c=>String(c).toLowerCase());
+      const hasH = first.some(c=>c.includes('операц')||c.includes('место')||c.includes('num')||c.includes('№'));
+      const data = hasH ? rows.slice(1) : rows;
 
-      if (rows.length < 2) { toast('Файл пустой или некорректный', 'error'); return; }
-
-      // Detect if first row is header
-      const firstRow = rows[0].map(c => String(c).toLowerCase());
-      const hasHeader = firstRow.some(c => c.includes('операц') || c.includes('место') || c.includes('№') || c.includes('num'));
-      const dataRows = hasHeader ? rows.slice(1) : rows;
-
-      pendingImport = dataRows
-        .filter(r => r.some(c => c !== ''))
-        .map((r, i) => ({
-          id: i + 1,
-          location: String(r[1] || r[0] || '').trim(),
-          operation: String(r[2] || r[1] || '').trim(),
-          note: String(r[3] || '').trim(),
-          photo: null
-        }));
-
-      // If 4-col data where col0 is number
-      dataRows.filter(r => r.some(c => c !== '')).forEach((r, i) => {
-        const maybeNum = parseInt(r[0]);
-        if (!isNaN(maybeNum) && r.length >= 3) {
-          pendingImport[i] = {
-            id: maybeNum,
-            location: String(r[1] || '').trim(),
-            operation: String(r[2] || '').trim(),
-            note: String(r[3] || '').trim(),
-            photo: null
-          };
-        }
+      pending = data.filter(r=>r.some(c=>c!=='')).map((r,i)=>{
+        const n = parseInt(r[0]); const ok = !isNaN(n)&&n>0;
+        return { id:ok?n:i+1, location:String(ok?r[1]:r[0]).trim(), operation:String(ok?r[2]:r[1]).trim(), note:String(ok?r[3]:r[2]).trim(), photo:null };
       });
 
-      renderImportPreview();
-    } catch(err) {
-      toast('Ошибка чтения файла: ' + err.message, 'error');
-    }
+      $('prev-rows').innerHTML =
+        `<div class="pr hd"><span class="pid">№</span><span class="ploc">Место</span><span class="pop">Операция</span></div>`+
+        pending.slice(0,14).map(r=>`<div class="pr"><span class="pid">${r.id}</span><span class="ploc">${esc(r.location)}</span><span class="pop">${esc(r.operation)}</span></div>`).join('')+
+        (pending.length>14?`<div class="pr" style="color:var(--muted);justify-content:center">...ещё ${pending.length-14} строк</div>`:'');
+
+      $('imp-prev').style.display='';
+      toast(`Найдено ${pending.length} записей`,'i');
+    } catch(e){ toast('Ошибка: '+e.message,'e'); }
   };
-  reader.readAsBinaryString(file);
-}
-
-function renderImportPreview() {
-  if (!pendingImport.length) { toast('Нет данных для загрузки', 'error'); return; }
-
-  const card = document.getElementById('import-preview-card');
-  const tbody = document.querySelector('#import-preview-table tbody');
-  const thead = document.querySelector('#import-preview-table thead tr');
-
-  thead.innerHTML = '<th>№</th><th>Место</th><th>Операция</th><th>Примечание</th>';
-  tbody.innerHTML = pendingImport.slice(0, 10).map(r => `
-    <tr>
-      <td class="td-id">${r.id}</td>
-      <td class="td-location">${esc(r.location)}</td>
-      <td>${esc(r.operation)}</td>
-      <td class="td-note">${esc(r.note) || '—'}</td>
-    </tr>
-  `).join('');
-
-  if (pendingImport.length > 10) {
-    tbody.innerHTML += `<tr><td colspan="4" style="text-align:center;color:var(--muted);font-style:italic">...ещё ${pendingImport.length - 10} строк</td></tr>`;
-  }
-
-  card.style.display = '';
-  toast(`Найдено ${pendingImport.length} записей. Подтвердите загрузку.`, 'info');
+  r.readAsBinaryString(file);
 }
 
 function confirmImport() {
-  db = pendingImport;
-  pendingImport = [];
-  saveDB();
-  document.getElementById('import-preview-card').style.display = 'none';
-  toast(`Бланк успешно загружен: ${db.length} операций`, 'success');
-  showPage('blank');
+  db = pending; pending = []; save();
+  $('imp-prev').style.display = 'none';
+  toast('Загружено: '+db.length+' операций','s');
+  go('blank');
 }
 
 function cancelImport() {
-  pendingImport = [];
-  document.getElementById('import-preview-card').style.display = 'none';
-  toast('Загрузка отменена', 'info');
+  pending = [];
+  $('imp-prev').style.display = 'none';
+  $('fn-lbl').textContent = 'Нажмите, чтобы выбрать файл';
 }
 
-// Demo data
 function loadDemo() {
   db = [
-    { id:1, location:'ОРУ-110 кВ, ячейка №5', operation:'Отключить разъединитель Р-511 на шине 110 кВ. Убедиться в видимом разрыве.', note:'', photo: null },
-    { id:2, location:'ОРУ-110 кВ, ячейка №5', operation:'Проверить положение заземляющих ножей ЗН-511А. Ножи разомкнуты.', note:'', photo: null },
-    { id:3, location:'ТП-6/0.4 кВ', operation:'Отключить масляный выключатель МВ-6 трансформатора Т-2. Проверить сигнализацию.', note:'', photo: null },
-    { id:4, location:'ТП-6/0.4 кВ', operation:'Включить заземляющий нож ЗН-6 на секции шин. Убедиться в срабатывании блокировки.', note:'', photo: null },
-    { id:5, location:'РУ-0,4 кВ', operation:'Отключить автоматический выключатель QB-01 на секционной шине. Вывесить плакат "НЕ ВКЛЮЧАТЬ!"', note:'', photo: null },
-    { id:6, location:'ОРУ-110 кВ, яч. №3', operation:'Проверить отсутствие напряжения на линии Л-31 с помощью указателя напряжения.', note:'', photo: null },
+    {id:1,location:'ОРУ-110 кВ, яч. №5',operation:'Отключить разъединитель Р-511 на шине 110 кВ. Убедиться в видимом разрыве.',note:'',photo:null},
+    {id:2,location:'ОРУ-110 кВ, яч. №5',operation:'Проверить положение заземляющих ножей ЗН-511А. Ножи разомкнуты.',note:'',photo:null},
+    {id:3,location:'ТП-6/0.4 кВ',operation:'Отключить масляный выключатель МВ-6 трансформатора Т-2. Проверить сигнализацию.',note:'',photo:null},
+    {id:4,location:'ТП-6/0.4 кВ',operation:'Включить заземляющий нож ЗН-6 на секции шин. Убедиться в срабатывании блокировки.',note:'',photo:null},
+    {id:5,location:'РУ-0.4 кВ',operation:'Отключить автоматический выключатель QB-01. Вывесить плакат «НЕ ВКЛЮЧАТЬ!»',note:'',photo:null},
+    {id:6,location:'ОРУ-110 кВ, яч. №3',operation:'Проверить отсутствие напряжения на линии Л-31 указателем напряжения.',note:'',photo:null},
   ];
-  saveDB();
-  toast('Демо-данные загружены: 6 операций', 'success');
-  showPage('blank');
+  save(); toast('Демо-данные загружены','s'); go('blank');
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER BLANK
-// ═══════════════════════════════════════════════════════
+// BLANK
 function renderBlank() {
-  const empty = document.getElementById('blank-empty');
-  const wrap = document.getElementById('blank-table-wrap');
-  const tbody = document.getElementById('blank-tbody');
-
-  if (!db.length) {
-    empty.style.display = '';
-    wrap.style.display = 'none';
-    return;
-  }
-
+  const list = $('bl-list'), empty = $('bl-empty');
+  if(!db.length){ empty.style.display=''; list.innerHTML=''; return; }
   empty.style.display = 'none';
-  wrap.style.display = '';
-
-  tbody.innerHTML = db.map(r => `
-    <tr>
-      <td class="td-id">${r.id}</td>
-      <td class="td-location">${esc(r.location)}</td>
-      <td class="td-operation">${esc(r.operation)}</td>
-      <td class="td-note">${r.note ? esc(r.note) : '<span style="color:var(--border)">—</span>'}</td>
-      <td class="td-photo">
-        ${r.photo
-          ? `<img class="photo-thumb" src="${r.photo}" alt="Фото" onclick="zoomPhoto('${r.photo}', ${r.id})">`
-          : '<span style="color:var(--border);font-size:11px;font-family:var(--mono)">—</span>'}
-      </td>
-      <td>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="quickEdit(${r.id})" title="Редактировать">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="quickDelete(${r.id})" title="Удалить">🗑</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  list.innerHTML = db.map(r=>`
+    <div class="oc">
+      <div class="onum ${r.note||r.photo?'done':''}">${r.id}</div>
+      <div class="obody">
+        ${r.location?`<div class="oloc">${esc(r.location)}</div>`:''}
+        <div class="otxt">${esc(r.operation)}</div>
+        ${r.note?`<div class="onote">📝 ${esc(r.note)}</div>`:''}
+      </div>
+      ${r.photo?`<img class="othumb" src="${r.photo}" onclick="zoom('${r.photo}',${r.id})">`:''}
+      <div class="oact">
+        <button class="ibtn" onclick="qEdit(${r.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="ibtn" onclick="qDel(${r.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="#E85D3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>`).join('');
 }
 
-function quickEdit(id) {
-  showPage('edit');
-  document.getElementById('upd-id').value = id;
-  const rec = db.find(r => r.id === id);
-  if (rec) {
-    document.getElementById('upd-location').value = rec.location;
-    document.getElementById('upd-operation').value = rec.operation;
-  }
-  document.getElementById('upd-id').focus();
+// CRUD
+function addRec() {
+  const loc=$('a-loc').value.trim(), op=$('a-op').value.trim();
+  if(!loc&&!op){ toast('Заполните хотя бы одно поле','e'); return; }
+  const id = db.length ? Math.max(...db.map(r=>r.id))+1 : 1;
+  db.push({id,location:loc,operation:op,note:'',photo:null}); save();
+  $('a-loc').value=''; $('a-op').value='';
+  toast('Запись добавлена (ID '+id+')','s');
 }
 
-function quickDelete(id) {
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast('Запись не найдена', 'error'); return; }
-  db.splice(idx, 1);
-  saveDB();
-  renderBlank();
-  toast(`Запись №${id} удалена`, 'success');
+function updRec() {
+  const id=parseInt($('u-id').value);
+  if(isNaN(id)){ toast('Введите номер','e'); return; }
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx===-1){ toast('Запись №'+id+' не найдена','e'); return; }
+  const loc=$('u-loc').value.trim(), op=$('u-op').value.trim();
+  if(loc) db[idx].location=loc;
+  if(op)  db[idx].operation=op;
+  save(); toast('Запись №'+id+' обновлена','s');
 }
 
-// ═══════════════════════════════════════════════════════
-//  CRUD
-// ═══════════════════════════════════════════════════════
-function addRecord() {
-  const location = document.getElementById('add-location').value.trim();
-  const operation = document.getElementById('add-operation').value.trim();
-
-  if (!location && !operation) { toast('Заполните хотя бы одно поле', 'error'); return; }
-
-  const maxId = db.length ? Math.max(...db.map(r => r.id)) : 0;
-  const newRecord = { id: maxId + 1, location, operation, note: '', photo: null };
-  db.push(newRecord);
-  saveDB();
-
-  document.getElementById('add-location').value = '';
-  document.getElementById('add-operation').value = '';
-
-  toast(`Запись успешно добавлена! ID: ${newRecord.id}`, 'success');
+function delRec() {
+  const id=parseInt($('d-id').value);
+  if(isNaN(id)){ toast('Введите номер','e'); return; }
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx===-1){ toast('Не найдено','e'); return; }
+  db.splice(idx,1); save(); $('d-id').value='';
+  toast('Запись №'+id+' удалена','s');
 }
 
-function updateRecord() {
-  const idStr = document.getElementById('upd-id').value.trim();
-  const id = parseInt(idStr);
-  if (!idStr || isNaN(id)) { toast('Введите номер операции', 'error'); return; }
+function delAll() {
+  if(!db.length){ toast('Бланк уже пустой','i'); return; }
+  opn('ov-confirm');
+}
+function confirmDel() { db=[]; save(); cls('ov-confirm'); toast('Все записи удалены','s'); }
 
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast(`Запись №${id} не найдена`, 'error'); return; }
-
-  const newLoc = document.getElementById('upd-location').value.trim();
-  const newOp  = document.getElementById('upd-operation').value.trim();
-
-  if (newLoc) db[idx].location = newLoc;
-  if (newOp)  db[idx].operation = newOp;
-
-  saveDB();
-  toast(`Запись №${id} успешно обновлена!`, 'success');
+function qEdit(id) {
+  go('edit'); $('u-id').value=id;
+  const r=db.find(x=>x.id===id);
+  if(r){ $('u-loc').value=r.location; $('u-op').value=r.operation; }
+}
+function qDel(id) {
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx!==-1){ db.splice(idx,1); save(); renderBlank(); toast('Удалено','s'); }
 }
 
-function deleteRecord() {
-  const idStr = document.getElementById('del-id').value.trim();
-  const id = parseInt(idStr);
-  if (!idStr || isNaN(id)) { toast('Введите номер операции', 'error'); return; }
-
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast(`Запись №${id} не найдена`, 'error'); return; }
-
-  db.splice(idx, 1);
-  saveDB();
-  document.getElementById('del-id').value = '';
-  toast(`Запись №${id} успешно удалена!`, 'success');
-}
-
-function deleteAll() {
-  if (!db.length) { toast('Бланк уже пустой', 'info'); return; }
-  document.getElementById('confirm-modal').classList.add('open');
-}
-
-function confirmDeleteAll() {
-  db = [];
-  saveDB();
-  closeModal('confirm-modal');
-  toast('Все записи удалены!', 'success');
-}
-
-// ═══════════════════════════════════════════════════════
-//  NOTES
-// ═══════════════════════════════════════════════════════
+// NOTES
 function addNote() {
-  const idStr = document.getElementById('note-id').value.trim();
-  const id = parseInt(idStr);
-  const noteText = document.getElementById('note-text').value.trim();
-
-  if (!idStr || isNaN(id)) { toast('Введите номер операции', 'error'); return; }
-  if (!noteText) { toast('Введите текст примечания', 'error'); return; }
-
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast(`Операция №${id} не найдена в бланке`, 'error'); return; }
-
-  db[idx].note = noteText;
-  saveDB();
-
-  document.getElementById('note-id').value = '';
-  document.getElementById('note-text').value = '';
-  renderNotesList();
-  toast(`Примечание к операции №${id} успешно добавлено!`, 'success');
+  const id=parseInt($('n-id').value), txt=$('n-txt').value.trim();
+  if(isNaN(id)){ toast('Введите номер операции','e'); return; }
+  if(!txt){ toast('Введите примечание','e'); return; }
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx===-1){ toast('Операция №'+id+' не найдена','e'); return; }
+  db[idx].note=txt; save();
+  $('n-id').value=''; $('n-txt').value='';
+  renderNotes(); toast('Примечание добавлено к №'+id,'s');
 }
 
-function renderNotesList() {
-  const el = document.getElementById('notes-list');
-  const withNotes = db.filter(r => r.note && r.note.trim());
-  if (!withNotes.length) {
-    el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:8px">Примечания не добавлены</p>';
-    return;
-  }
-  el.innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>№</th><th>Место</th><th>Примечание</th><th></th></tr></thead>
-    <tbody>${withNotes.map(r => `
-      <tr>
-        <td class="td-id">${r.id}</td>
-        <td class="td-location">${esc(r.location)}</td>
-        <td class="td-note">${esc(r.note)}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="clearNote(${r.id})">✕</button></td>
-      </tr>
-    `).join('')}</tbody>
-  </table></div>`;
+function renderNotes() {
+  const list=$('n-list'), empty=$('n-empty');
+  const wn=db.filter(r=>r.note&&r.note.trim());
+  empty.style.display = wn.length?'none':'';
+  list.innerHTML = wn.map(r=>`
+    <div class="nitem">
+      <div class="nbadge">${r.id}</div>
+      <div class="ntxt">${esc(r.note)}</div>
+      <button class="ibtn" onclick="clrNote(${r.id})">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 18L18 6M6 6l12 12" stroke="#E85D3E" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>`).join('');
+}
+function clrNote(id) {
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx!==-1){ db[idx].note=''; save(); renderNotes(); toast('Примечание удалено','i'); }
 }
 
-function clearNote(id) {
-  const idx = db.findIndex(r => r.id === id);
-  if (idx !== -1) { db[idx].note = ''; saveDB(); renderNotesList(); toast(`Примечание №${id} удалено`, 'info'); }
-}
-
-// ═══════════════════════════════════════════════════════
-//  PHOTO — CAMERA
-// ═══════════════════════════════════════════════════════
-async function startCamera() {
+// CAMERA
+async function toggleCam() {
+  if(camOn){ stopCam(); return; }
+  const id=parseInt($('ph-id').value);
+  if(isNaN(id)){ toast('Введите номер операции','e'); return; }
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    document.getElementById('camera-preview').srcObject = cameraStream;
-    document.getElementById('btn-start-cam').style.display = 'none';
-    document.getElementById('btn-capture').style.display = '';
-    document.getElementById('btn-stop-cam').style.display = '';
-    toast('Камера включена', 'info');
-  } catch(e) {
-    toast('Нет доступа к камере: ' + e.message, 'error');
-  }
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    $('cam-prev').srcObject=camStream; $('cam-prev').style.display='';
+    $('cam-lbl').textContent='Выключить камеру';
+    $('btn-snap').style.display=''; camOn=true;
+    $('btn-cam').className='btn bg';
+  } catch(e){ toast('Нет доступа к камере','e'); }
 }
 
-function capturePhoto() {
-  const idStr = document.getElementById('photo-op-id').value.trim();
-  const id = parseInt(idStr);
-  if (!idStr || isNaN(id)) { toast('Введите номер операции', 'error'); return; }
-
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast(`Операция №${id} не найдена`, 'error'); return; }
-
-  const video = document.getElementById('camera-preview');
-  const canvas = document.getElementById('photo-canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  const dataURL = canvas.toDataURL('image/jpeg', 0.8);
-
-  db[idx].photo = dataURL;
-  saveDB();
-  stopCamera();
-  renderGallery();
-  toast(`Фото сохранено для операции №${id}`, 'success');
+function stopCam() {
+  if(camStream) camStream.getTracks().forEach(t=>t.stop());
+  camStream=null; camOn=false;
+  $('cam-prev').style.display='none'; $('btn-snap').style.display='none';
+  $('cam-lbl').textContent='Включить камеру'; $('btn-cam').className='btn bp';
 }
 
-function stopCamera() {
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-  document.getElementById('camera-preview').srcObject = null;
-  document.getElementById('btn-start-cam').style.display = '';
-  document.getElementById('btn-capture').style.display = 'none';
-  document.getElementById('btn-stop-cam').style.display = 'none';
+function snap() {
+  const id=parseInt($('ph-id').value), idx=db.findIndex(r=>r.id===id);
+  if(idx===-1){ toast('Операция не найдена','e'); return; }
+  const v=$('cam-prev'), c=$('ph-canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  db[idx].photo=c.toDataURL('image/jpeg',.82);
+  save(); stopCam(); renderGallery();
+  toast('Фото сохранено для операции №'+id,'s');
 }
 
-// ═══════════════════════════════════════════════════════
-//  PHOTO — FILE
-// ═══════════════════════════════════════════════════════
-function loadPhotoFromFile() {
-  const file = document.getElementById('photo-file-input').files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    filePhotoData = e.target.result;
-    const preview = document.getElementById('photo-file-preview');
-    preview.src = filePhotoData;
-    preview.style.display = '';
-    document.getElementById('btn-save-file-photo').style.display = '';
-  };
-  reader.readAsDataURL(file);
+function loadPhFile() {
+  const f=$('ph-file').files[0]; if(!f) return;
+  $('ph-file-lbl').textContent=f.name;
+  const r=new FileReader();
+  r.onload=e=>{ filePh=e.target.result; $('btn-save-ph').style.display=''; };
+  r.readAsDataURL(f);
 }
 
-function savePhotoFromFile() {
-  const idStr = document.getElementById('photo-file-op-id').value.trim();
-  const id = parseInt(idStr);
-  if (!idStr || isNaN(id)) { toast('Введите номер операции', 'error'); return; }
-  if (!filePhotoData) { toast('Выберите фото', 'error'); return; }
-
-  const idx = db.findIndex(r => r.id === id);
-  if (idx === -1) { toast(`Операция №${id} не найдена`, 'error'); return; }
-
-  db[idx].photo = filePhotoData;
-  saveDB();
-  filePhotoData = null;
-  document.getElementById('photo-file-preview').style.display = 'none';
-  document.getElementById('btn-save-file-photo').style.display = 'none';
-  document.getElementById('photo-file-op-id').value = '';
-  document.getElementById('photo-file-input').value = '';
-  renderGallery();
-  toast(`Фото сохранено для операции №${id}`, 'success');
+function savePhFile() {
+  const id=parseInt($('ph-id').value), idx=db.findIndex(r=>r.id===id);
+  if(isNaN(id)||idx===-1){ toast('Введите корректный № операции','e'); return; }
+  if(!filePh){ toast('Выберите фото','e'); return; }
+  db[idx].photo=filePh; save(); renderGallery();
+  filePh=null; $('btn-save-ph').style.display='none';
+  $('ph-file-lbl').textContent='Выбрать фото'; $('ph-file').value='';
+  toast('Фото сохранено для №'+id,'s');
 }
 
 function renderGallery() {
-  const gallery = document.getElementById('photo-gallery');
-  const none = document.getElementById('no-photos');
-  const withPhotos = db.filter(r => r.photo);
-
-  if (!withPhotos.length) {
-    gallery.innerHTML = '';
-    none.style.display = '';
-    return;
-  }
-  none.style.display = 'none';
-  gallery.innerHTML = withPhotos.map(r => `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-      <img class="photo-thumb" style="width:100px;height:80px"
-           src="${r.photo}" alt="Фото №${r.id}"
-           onclick="zoomPhoto('${r.photo}', ${r.id})">
-      <span style="font-family:var(--mono);font-size:10px;color:var(--amber)">ОП №${r.id}</span>
-      <button class="btn btn-danger btn-sm" onclick="deletePhoto(${r.id})">🗑</button>
-    </div>
-  `).join('');
+  const g=$('gallery'), e=$('g-empty');
+  const ph=db.filter(r=>r.photo);
+  e.style.display=ph.length?'none':'';
+  g.innerHTML=ph.map(r=>`
+    <div class="gi" onclick="zoom('${r.photo}',${r.id})">
+      <img src="${r.photo}" alt="Оп.${r.id}">
+      <div class="gbadge">№${r.id}</div>
+      <button class="gdel" onclick="event.stopPropagation();delPh(${r.id})">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 18L18 6M6 6l12 12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>`).join('');
+}
+function delPh(id) {
+  const idx=db.findIndex(r=>r.id===id);
+  if(idx!==-1){ db[idx].photo=null; save(); renderGallery(); toast('Фото удалено','i'); }
+}
+function zoom(src,id) {
+  $('z-img').src=src; $('z-tit').textContent='Фото — операция №'+id; opn('ov-zoom');
 }
 
-function deletePhoto(id) {
-  const idx = db.findIndex(r => r.id === id);
-  if (idx !== -1) { db[idx].photo = null; saveDB(); renderGallery(); toast(`Фото операции №${id} удалено`, 'info'); }
+// EXPORT
+function renderExport() {
+  set('ex-tot', db.length+' операций');
+  set('ex-nt', db.filter(r=>r.note&&r.note.trim()).length);
+  set('ex-ph', db.filter(r=>r.photo).length);
 }
 
-function zoomPhoto(src, id) {
-  document.getElementById('zoom-img').src = src;
-  document.getElementById('zoom-caption').textContent = `Операция №${id}`;
-  document.getElementById('zoom-modal').classList.add('open');
+function exportXl() {
+  if(!db.length){ toast('Бланк пустой','e'); return; }
+  const rows=[['№ операции','Место нахождения','Содержание операций','Примечание'],
+    ...db.map(r=>[r.id,r.location,r.operation,r.note||''])];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:30},{wch:60},{wch:40}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Бланк');
+  const fn=($('ex-fn').value.trim()||'blank')+'.xlsx';
+  XLSX.writeFile(wb,fn);
+  toast('Файл «'+fn+'» скачан','s');
 }
 
-// ═══════════════════════════════════════════════════════
-//  EXPORT EXCEL
-// ═══════════════════════════════════════════════════════
-function exportExcel() {
-  if (!db.length) { toast('Бланк пустой — нечего выгружать', 'error'); return; }
-
-  const rows = [
-    ['№ операции', 'Место нахождения', 'Содержание операций', 'Примечание'],
-    ...db.map(r => [r.id, r.location, r.operation, r.note || ''])
-  ];
-
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-
-  // Column widths
-  ws['!cols'] = [
-    { wch: 12 }, { wch: 30 }, { wch: 60 }, { wch: 40 }
-  ];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Бланк переключений');
-
-  const filename = (document.getElementById('export-filename').value.trim() || 'blank_pereklyucheniy') + '.xlsx';
-  XLSX.writeFile(wb, filename);
-
-  toast(`Файл «${filename}» успешно выгружен!`, 'success');
+// UTILS
+function toast(msg, type='i') {
+  const el=document.createElement('div');
+  const map={s:'ts',e:'te',i:'ti'};
+  el.className='toast '+(map[type]||'ti');
+  el.innerHTML=`<strong>${{s:'✓',e:'✕',i:'·'}[type]}</strong> ${msg}`;
+  $('ta').appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
 }
 
-// ═══════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function opn(id){ $(id).classList.add('op'); }
+function cls(id){ $(id).classList.remove('op'); }
 
-function toast(msg, type = 'info') {
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-  el.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-// Close modal on overlay click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('open');
-  });
+document.querySelectorAll('.ov').forEach(el=>{
+  el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('op'); });
 });
 
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-updateStats();
-updateNavCount();
+refresh();
 </script>
 </body>
 </html>
